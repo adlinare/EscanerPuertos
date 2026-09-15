@@ -3,7 +3,20 @@
 #Shebang python 
 
 import socket
+import argparse
 from termcolor import colored
+import sys
+
+def get_arguments():
+    parser = argparse.ArgumentParser(description='Fast TCP Port Scanner')
+    parser.add_argument("-t", "--target", dest="target", help="Victim target to scan (Ex: 192.168.1.1)")
+    option = parser.parse_args()
+
+    if not option.target:
+        print(colored(f"\n[!] No se ha proporcionado el target\n", 'red'))
+        sys.exit(1)
+    return option.target
+
 
 #Esta funcion nos permite crear el socket
 def create_socket():
@@ -21,18 +34,17 @@ def port_scanner(port, host, s):
         print(colored(f"El puerto {port} esta abierto", 'green'))
         s.close()
     except (socket.timeout, ConnectionRefusedError):
-        print(colored(f"[!]El puerto {port} esta cerrado", 'red'))
         s.close()
 
 
 
 def main():
     
-    host = input(f"\n[+] Introduce la direccion IP: ")
-    
+    target = get_arguments()
+
     for port in range(1, 1000):
         s = create_socket()
-        port_scanner(port,host, s)
+        port_scanner(port, target, s)
     
 
 
