@@ -10,12 +10,15 @@ import sys
 def get_arguments():
     parser = argparse.ArgumentParser(description='Fast TCP Port Scanner')
     parser.add_argument("-t", "--target", dest="target", help="Victim target to scan (Ex: 192.168.1.1)")
+    parser.add_argument("-p", "--port", dest="port", help="Port range to scan (Ex: -p 1-100)")
+
+
     option = parser.parse_args()
 
-    if not option.target:
-        print(colored(f"\n[!] No se ha proporcionado el target\n", 'red'))
+    if option.target is None or option.port is None:
+        parser.print_help()
         sys.exit(1)
-    return option.target
+    return option.target, option.port
 
 
 #Esta funcion nos permite crear el socket
@@ -40,12 +43,25 @@ def port_scanner(port, host, s):
 
 def main():
     
-    target = get_arguments()
+    target, port = get_arguments()
 
-    for port in range(1, 1000):
-        s = create_socket()
-        port_scanner(port, target, s)
+    if '-' in port:
+        ports = port.split("-")
+
+        for port in range(int(ports[0]), int(ports[1])):
+            s = create_socket()
+            port_scanner(port, target, s)
+
+    elif ',' in port:
+        ports = port.split(",")
     
+        for port in ports:
+            s = create_socket()
+            port_scanner(int(port), target, s)
+
+
+
+        
 
 
 
