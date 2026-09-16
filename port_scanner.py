@@ -5,19 +5,16 @@
 import socket
 import argparse
 from termcolor import colored
-import sys
+import threading
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Fast TCP Port Scanner')
-    parser.add_argument("-t", "--target", dest="target", help="Victim target to scan (Ex: 192.168.1.1)")
-    parser.add_argument("-p", "--port", dest="port", help="Port range to scan (Ex: -p 1-100)")
+    parser.add_argument("-t", "--target", dest="target", required=True, help="Victim target to scan (Ex: 192.168.1.1)")
+    parser.add_argument("-p", "--port", dest="port", required=True, help="Port range to scan (Ex: -p 1-100)")
 
 
     option = parser.parse_args()
 
-    if option.target is None or option.port is None:
-        parser.print_help()
-        sys.exit(1)
     return option.target, option.port
 
 
@@ -29,8 +26,9 @@ def create_socket():
     return s
 
 
-def port_scanner(port, host, s):
+def port_scanner(port, host):
     
+    s = create_socket()
     #Este es otro sistema, empleando connect y viendo si devuelve error de conexion o timeout por espera exesiva 
     try:
         s.connect((host, port))
@@ -41,9 +39,16 @@ def port_scanner(port, host, s):
 
 
 def scan_ports(ports, target):
+
+    threads = []
+
     for port in ports:
-        s = create_socket()
-        port_scanner(port, target, s)
+        thread = threading.Thread(target=port_scanner, args=(port, target))
+        threads.append(thread)
+        thread.start()
+        
+    for thread in threads:
+        thread.join()
 
 
 
