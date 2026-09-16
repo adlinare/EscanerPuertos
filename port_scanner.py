@@ -5,7 +5,7 @@
 import socket
 import argparse
 from termcolor import colored
-import threading
+from concurrent.futures import ThreadPoolExecutor #Esta clase nos permite limitar la  pool de ejecuon para no desbordar los hilos
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Fast TCP Port Scanner')
@@ -40,17 +40,9 @@ def port_scanner(port, host):
 
 def scan_ports(ports, target):
 
-    threads = []
-
-    for port in ports:
-        thread = threading.Thread(target=port_scanner, args=(port, target))
-        threads.append(thread)
-        thread.start()
-        
-    for thread in threads:
-        thread.join()
-
-
+    #max_workers es el numero maximo de la pool
+    with ThreadPoolExecutor(max_workers=600) as executor:
+        executor.map(lambda port: port_scanner(port, target), ports)
 
 def parse_port(port_str):
 
