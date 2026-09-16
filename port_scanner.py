@@ -40,29 +40,31 @@ def port_scanner(port, host, s):
         s.close()
 
 
+def scan_ports(ports, target):
+    for port in ports:
+        s = create_socket()
+        port_scanner(port, target, s)
+
+
+
+def parse_port(port_str):
+
+    if '-' in port_str:
+        start, end = map(int, port_str.split("-"))
+        return range(start, end+1)
+        
+    elif ',' in port_str:
+        return map(int, port_str.split(','))
+
+    else:
+        return (int(port_str),)
+
 
 def main():
     
     target, port = get_arguments()
-
-    if '-' in port:
-        ports = port.split("-")
-
-        for port in range(int(ports[0]), int(ports[1])):
-            s = create_socket()
-            port_scanner(port, target, s)
-
-    elif ',' in port:
-        ports = port.split(",")
-    
-        for port in ports:
-            s = create_socket()
-            port_scanner(int(port), target, s)
-
-
-
-        
-
+    ports = parse_port(port)
+    scan_ports(ports, target)
 
 
 if __name__ == '__main__':
